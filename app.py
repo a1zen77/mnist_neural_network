@@ -2,7 +2,6 @@ import streamlit as st
 import numpy as np
 import pandas as pd
 
-# Load and preprocess data
 @st.cache_data
 def load_data():
     df = pd.read_csv("train.csv")
@@ -16,13 +15,12 @@ def load_data():
     y_val = val_data[:, 0]
     return X_val, y_val
 
-# Load trained weights
+# loading weights from model
 @st.cache_data
 def load_weights():
     weights = np.load("trained_weights.npz")
     return weights["W1"], weights["B1"], weights["W2"], weights["B2"]
 
-# Model logic
 def ReLU(X):
     return np.maximum(X, 0)
 
@@ -47,10 +45,9 @@ def get_accuracy(predictions, Y):
 X_val, y_val = load_data()
 W1, B1, W2, B2 = load_weights()
 
-# --- UI ---
-st.title("🧠 MNIST Digit Classifier")
+# streamlit interface
+st.title("MNIST Digit Classifier")
 
-# Session state to store selected index
 if "index" not in st.session_state:
     st.session_state.index = 0
 
@@ -61,23 +58,19 @@ with col2:
     if st.button("🎲 Random"):
         st.session_state.index = np.random.randint(0, X_val.shape[1])
 
-# Prediction
 index = st.session_state.index
 x = X_val[:, index].reshape(784, 1)
 actual = y_val[index]
 A2 = forward_propagation(W1, B1, W2, B2, x)
 predicted = get_predictions(A2)[0]
 
-# Image display
 st.image(x.reshape(28, 28), width=280, caption="Selected MNIST Digit", clamp=True)
 
-# Feedback
 if predicted == actual:
     st.success(f"✅ Correct Prediction: {predicted}")
 else:
     st.error(f"❌ Incorrect Prediction: {predicted} (Actual: {actual})")
 
-# Accuracy
 A2_all = forward_propagation(W1, B1, W2, B2, X_val)
 val_predictions = get_predictions(A2_all)
 val_accuracy = get_accuracy(val_predictions, y_val)
